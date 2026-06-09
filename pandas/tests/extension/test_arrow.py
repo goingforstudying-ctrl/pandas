@@ -3782,6 +3782,17 @@ def test_interpolate_linear(dtype):
     tm.assert_series_equal(result, expected)
 
 
+@pytest.mark.parametrize("dtype", ["int64[pyarrow]", "float64[pyarrow]"])
+def test_interpolate_linear_consecutive_na(dtype):
+    # GH#65345 - consecutive NAs should be interpolated correctly
+    # by falling through to the generic masked-array path.
+    data = [1, 2, 3, None, None, 6, 7]
+    ser = pd.Series(pd.array(data, dtype=dtype))
+    result = ser.interpolate(method="linear", limit_direction="forward")
+    expected = pd.Series(pd.array([1, 2, 3, 4, 5, 6, 7], dtype=dtype))
+    tm.assert_series_equal(result, expected)
+
+
 def test_string_to_time_parsing_cast():
     # GH 56463
     string_times = ["11:41:43.076160"]
