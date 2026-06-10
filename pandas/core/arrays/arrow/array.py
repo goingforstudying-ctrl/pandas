@@ -2911,6 +2911,13 @@ class ArrowExtensionArray(
             mask=mask,
             **kwargs,
         )
+        if self.dtype.kind in "iu":
+            # Linear interpolation between integer endpoints at integer
+            # positions always produces exact integer values, so rounding
+            # is correct.  Convert back to the original integer type so
+            # that the returned array preserves the input dtype (matching
+            # the PyArrow fast-path behaviour above).
+            data = np.around(data).astype(self.dtype.numpy_dtype)
         return self._from_pyarrow_array(self._box_pa_array(pa.array(data, mask=mask)))
 
     @classmethod
